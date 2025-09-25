@@ -45,6 +45,11 @@ type AuthService interface {
 	register(context.Context, RegisterRequest) (schema.Response[AuthResponse], error)
 	registerWithGoogle(ctx context.Context, queryParam url.Values) (schema.Response[AuthResponse], error)
 	login(context.Context, LoginRequest) (schema.Response[AuthResponse], error)
+	refreshToken(context.Context, RefreshTokenRequest) (schema.Response[AuthResponse], error)
+}
+
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refresh_token" validate:"required"`
 }
 
 type LoginRequest struct {
@@ -78,9 +83,20 @@ type AuthResponse struct {
 
 func (asi AuthServiceImpl) refreshToken(
 	ctx context.Context,
-	token string,
+	token RefreshTokenRequest,
 ) (schema.Response[AuthResponse], error) {
-	verifiedToken, err := jwt.ParseWithClaims(token, internalToken.AuthJwtClaims{}, func(t *jwt.Token) (any, error) {
+	err := asi.Validate.Struct(token)
+	if err != nil {
+		return schema.Response[AuthResponse]{
+			Status: "fail",
+			Code:   http.StatusUnauthorized,
+			Error: schema.Error{
+				Message: "Fail to look up refresh token",
+			},
+		}, fmt.Errorf("refresh token validation error: %w", err.Error())
+	}
+
+	verifiedToken, err := jwt.ParseWithClaims(token.RefreshToken, internalToken.AuthJwtClaims{}, func(t *jwt.Token) (any, error) {
 		return os.Getenv("JWT_SECRET"), nil
 	})
 
@@ -215,7 +231,6 @@ func (asi AuthServiceImpl) registerWithGoogle(
 		if err != nil {
 			return nil, fmt.Errorf("failed to get google jwk %w", err)
 		}
-		fmt.Println("\n google certs: ", certs)
 
 		// Find the key that matches the token's Key ID
 		for _, key := range certs.Keys {
