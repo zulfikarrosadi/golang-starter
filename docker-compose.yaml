@@ -1,0 +1,23 @@
+version: '3.8'
+
+volumes:
+  alloy-data:
+
+services:
+  alloy:
+    image: grafana/alloy:v1.10.2 # Use the official Grafana Alloy image
+    container_name: grafana-alloy
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy
+      - ./app.log:/var/log/app.log:ro # 'ro' means read-only, a good practice for safety
+      - alloy-data:/var/lib/alloy/data
+    command:
+      - "run"
+      - "/etc/alloy/config.alloy"
+      - "--server.http.listen-addr=0.0.0.0:12345"
+      - "--storage.path=/var/lib/alloy/data"
+    ports:
+      - "12345:12345"
