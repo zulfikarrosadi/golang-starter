@@ -17,7 +17,10 @@ type AuthApiImpl struct {
 }
 
 type AuthApi interface {
-	register(echo.Context) error
+	Register(echo.Context) error
+	Login(echo.Context) error
+	RegisterWithGoogle(echo.Context) error
+	RefreshToken(echo.Context) error
 }
 
 func NewAuthApi(service AuthService, logger *slog.Logger) AuthApiImpl {
@@ -25,6 +28,31 @@ func NewAuthApi(service AuthService, logger *slog.Logger) AuthApiImpl {
 		service: service,
 		logger:  logger,
 	}
+}
+
+func (aa AuthApiImpl) RefreshToken(c echo.Context) error {
+	logger := middleware.GetLogger(c.Request().Context())
+	token := RefreshTokenRequest{}
+	err := c.Bind(&token)
+
+	if err != nil {
+		logger.Debug("refresh token api fail to bind refresh token from request body: ", slog.Any("error", err.Error()))
+		return echo.NewHTTPError(http.StatusUnauthorized, "Fail to look up refresh token")
+	}
+
+	res, err := aa.service.refreshToken(c.Request().Context(), token)
+	if err != nil {
+		if err = c.JSON(res.Code, res); err != nil {
+			logger.Debug("login api fail to send error response: ", slog.Any("error", err.Error()))
+			return echo.NewHTTPError(http.StatusInternalServerError, "Something went wrong, please try again later")
+		}
+	}
+	if err = c.JSON(res.Code, res); err != nil {
+		logger.Debug("login api fail to send error response: ", slog.Any("error", err.Error()))
+		return echo.NewHTTPError(http.StatusInternalServerError, "Something went wrong, please try again later")
+	}
+
+	return nil
 }
 
 func (aa AuthApiImpl) Login(c echo.Context) error {
