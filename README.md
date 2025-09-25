@@ -56,8 +56,8 @@ Follow these steps to set up and run the project locally.
 1.  **Clone the repository:**
 
     ```sh
-    git clone <your-repository-url>
-    cd <repository-name>
+    git clone git@github.com:zulfikarrosadi/golang-starter.git
+    cd golang-starter
     ```
 
 2.  **Configure Environment Variables:**
