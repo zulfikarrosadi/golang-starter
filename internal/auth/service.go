@@ -43,7 +43,7 @@ func NewAuthService(
 
 type AuthService interface {
 	register(context.Context, RegisterRequest) (schema.Response[AuthResponse], error)
-	registerWithGoogle(ctx context.Context, queryParam url.Values) (schema.Response[AuthResponse], error)
+	authWithGoogle(ctx context.Context, queryParam url.Values) (schema.Response[AuthResponse], error)
 	login(context.Context, LoginRequest) (schema.Response[AuthResponse], error)
 	refreshToken(context.Context, RefreshTokenRequest) (schema.Response[AuthResponse], error)
 }
@@ -207,7 +207,7 @@ func (asi AuthServiceImpl) login(
 	}, nil
 }
 
-func (asi AuthServiceImpl) registerWithGoogle(
+func (asi AuthServiceImpl) authWithGoogle(
 	ctx context.Context,
 	queryParam url.Values,
 ) (schema.Response[AuthResponse], error) {
@@ -284,7 +284,7 @@ func (asi AuthServiceImpl) registerWithGoogle(
 		Type:           "google",
 	}
 
-	err = asi.repo.createUser(ctx, newUser)
+	err = asi.repo.findOrCreate(ctx, newUser)
 	if err != nil {
 		return schema.Response[AuthResponse]{
 			Status: "fail",

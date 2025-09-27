@@ -33,6 +33,7 @@ func NewAuthRepo(db *sql.DB) RepositoryImpl {
 type Repository interface {
 	createUser(context.Context, User) error
 	findByEmail(context.Context, string) (User, error)
+	findOrCreate(context.Context, User) error
 }
 
 func (ri RepositoryImpl) createUser(ctx context.Context, user User) error {
@@ -66,6 +67,44 @@ func (ri RepositoryImpl) createUser(ctx context.Context, user User) error {
 	err = tx.Commit()
 	if err != nil {
 		return errors.New("Fail to create new user, something went wrong. Please try again later")
+	}
+
+	return nil
+}
+
+func (ri RepositoryImpl) findOrCreate(ctx context.Context, data User) error {
+	tx, err := ri.DB.BeginTx(ctx, &sql.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	findQuery := "SELECT id, fullname, email, password FROM users WHERE email = ?"
+	newAccountQuery := "INSERT INTO accounts (id, type, password) VALUES (?,?,?)"
+	newUserQuery := "INSERT INTO users (id, email, email_verified, fullname, account_id, profile_picture) VALUES (?,?,?,?,?)"
+
+	findResult := tx.QueryRowContext(ctx, findQuery, data.Email)
+	findResultErr := findResult.Err()
+	if findResultErr != nil {
+		if findResultErr == sql.ErrNoRows {
+			_, err := tx.ExecContext(ctx, newAccountQuery, data.AccountId, data.Type, data.Password)
+
+			if err != nil {
+				return err
+			}
+
+			_, err = tx.ExecContext(ctx, newUserQuery, data.UserId, data.Email, data.EmailVerified, data.Fullname, data.AccountId, data.ProfilePicture)
+
+			if err != nil {
+				return err
+			}
+
+		}
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("failed to find and create user: %w", err)
 	}
 
 	return nil

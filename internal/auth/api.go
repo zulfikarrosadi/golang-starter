@@ -19,7 +19,7 @@ type AuthApiImpl struct {
 type AuthApi interface {
 	Register(echo.Context) error
 	Login(echo.Context) error
-	RegisterWithGoogle(echo.Context) error
+	AuthWithGoogle(echo.Context) error
 	RefreshToken(echo.Context) error
 }
 
@@ -127,7 +127,7 @@ func (aa AuthApiImpl) Register(c echo.Context) error {
 	return nil
 }
 
-func (aa AuthApiImpl) RegisterWithGoogle(c echo.Context) error {
+func (aa AuthApiImpl) AuthWithGoogle(c echo.Context) error {
 	ctx := c.Request().Context()
 	logger := middleware.GetLogger(ctx)
 
@@ -144,7 +144,7 @@ func (aa AuthApiImpl) RegisterWithGoogle(c echo.Context) error {
 	params.Add("redirect_uri", redirectUri)
 	params.Add("client_secret", clientSecret)
 
-	response, err := aa.service.registerWithGoogle(ctx, params)
+	response, err := aa.service.authWithGoogle(ctx, params)
 	if err != nil {
 		logger.Debug("register service fail", slog.Any("error", err.Error()))
 		if err = c.JSON(response.Code, response); err != nil {

@@ -142,7 +142,7 @@ func main() {
 	apiV1.POST("/register", authApi.Register)
 	apiV1.POST("/login", authApi.Login)
 	apiV1.POST("/token", authApi.RefreshToken)
-	apiV1.GET("/oauth/google", authApi.RegisterWithGoogle)
+	apiV1.GET("/oauth/google", authApi.AuthWithGoogle)
 	apiV1Protected.GET("test", func(c echo.Context) error {
 		return c.String(http.StatusOK, "tset")
 	})
