@@ -124,20 +124,20 @@ func (g googleOAuthClientImpl) ExchangeCodeForToken(ctx context.Context, queryPa
 	resp, err := http.PostForm(baseUrl, queryParam)
 
 	if err != nil {
-		return GoogleTokenResponse{}, fmt.Errorf("http request fail to get token: %w", err.Error())
+		return GoogleTokenResponse{}, fmt.Errorf("http request fail to get token: %w", err)
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return GoogleTokenResponse{}, fmt.Errorf("fail to read response body: %w", err.Error())
+		return GoogleTokenResponse{}, fmt.Errorf("fail to read response body: %w", err)
 	}
 
 	var googleTokenResponse GoogleTokenResponse
 	err = json.Unmarshal(body, &googleTokenResponse)
 	if err != nil {
 		fmt.Println("fail to unmarshall body: ", err)
-		return GoogleTokenResponse{}, fmt.Errorf("fail to unmarshall response body: %w", err.Error())
+		return GoogleTokenResponse{}, fmt.Errorf("fail to unmarshall response body: %w", err)
 	}
 
 	return googleTokenResponse, nil

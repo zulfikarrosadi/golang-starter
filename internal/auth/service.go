@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -93,7 +94,7 @@ func (asi AuthServiceImpl) refreshToken(
 			Error: schema.Error{
 				Message: "Fail to look up refresh token",
 			},
-		}, fmt.Errorf("refresh token validation error: %w", err.Error())
+		}, fmt.Errorf("refresh token validation error: %w", err)
 	}
 
 	verifiedToken, err := jwt.ParseWithClaims(token.RefreshToken, internalToken.AuthJwtClaims{}, func(t *jwt.Token) (any, error) {
@@ -250,7 +251,7 @@ func (asi AuthServiceImpl) authWithGoogle(
 			Error: schema.Error{
 				Message: "Fail to register with google, please try again later",
 			},
-		}, fmt.Errorf("token is not valid")
+		}, errors.New("token is not valid")
 	}
 
 	claims := token.Claims.(*GoogleUserClaims)
@@ -362,7 +363,7 @@ func (asi AuthServiceImpl) register(
 			Error: schema.Error{
 				Message: "fail to create your account, please contact your administrator",
 			},
-		}, fmt.Errorf("register user service fail: generate hash password failed $w", err.Error())
+		}, fmt.Errorf("register user service fail: generate hash password failed %w", err)
 	}
 	newUser.Password = string(bytesPassord)
 
