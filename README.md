@@ -108,7 +108,7 @@ Follow these steps to set up and run the project locally.
 Here are some of the features and improvements planned for the future:
 
   - [ ] **Database Migrations**: Implement a migration system for easier database setup and versioning.
-  - [ ] **Unit Testing**: Add comprehensive unit and integration tests for all services and endpoints.
+  - [x] **Unit Testing**: Add comprehensive unit and integration tests for all services and endpoints.
   - [ ] **API Documentation**: Generate and serve API documentation using Swagger/OpenAPI.
-  - [ ] **Complete Google OAuth**: Finalize the implementation for user registration and login via Google OAuth.
+  - [x] **Complete Google OAuth**: Finalize the implementation for user registration and login via Google OAuth.
   - [ ] **Containerization**: Provide a complete `Dockerfile` for building a production-ready container image of the application.
